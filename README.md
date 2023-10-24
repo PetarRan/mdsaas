@@ -1,5 +1,5 @@
-# Docker-AI-ML-Hackathon
-Official repository for the Docker AI/ML Hackathon 2023
+# Multi-Document Summarizer As a Service
+> Official repository for the Docker AI/ML Hackathon 2023
 
 ## Introduction
 
