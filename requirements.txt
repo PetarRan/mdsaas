@@ -6,6 +6,7 @@ Flask-Migrate
 Flask-RESTful
 Flask-CORS
 Flask-WTF
+Flask_Sqlalchemy
 
 # NLP Libraries
 spaCy

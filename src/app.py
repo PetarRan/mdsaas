@@ -1,15 +1,30 @@
 from config.config import Config
 from flask import Flask, request, jsonify, render_template
 from flask_login import LoginManager
+from flask_sqlalchemy import SQLAlchemy
 from models.User import User
 from summarizer_nltk.summarizer import (
     generate_summary,
 ) 
 
+app = Flask(__name__)
+
 def app_factory(config_name='development'):
-    app = Flask(__name__)
     app.config.from_object(Config)
     login_manager = LoginManager(app)
+
+    db = SQLAlchemy(app)
+
+    class User(db.Model):
+        __tablename__ = "user"
+        user_id = db.Column(db.Integer, primary_key=True)
+        username = db.Column(db.String(255))
+        password = db.Column(db.String(255))
+        email = db.Column(db.String(255))
+        registration_date = db.Column(db.Date)
+
+    with app.app_context():
+        db.create_all()
 
     @app.route("/")
     def homepage():
@@ -40,4 +55,4 @@ def app_factory(config_name='development'):
         except Exception as e:
             return jsonify({"error": str(e)}), 500
         
-    return app
+    return app, db, User
