@@ -1,32 +1,25 @@
+from config.config import Config
 from flask import Flask, request, jsonify, render_template
+from flask_login import LoginManager
+from models.User import User
 from summarizer_nltk.summarizer import (
     generate_summary,
-)
-from config import Config
-from flask_sqlalchemy import SQLAlchemy
+) 
 
-app = Flask(__name__)
-
-def app_factory(config_name="test"):
+def app_factory(config_name='development'):
+    app = Flask(__name__)
     app.config.from_object(Config)
-
-    db = SQLAlchemy(app)
-
-    class User(db.Model):
-        __tablename__ = "user"
-        user_id = db.Column(db.Integer, primary_key=True)
-        username = db.Column(db.String(255))
-        password = db.Column(db.String(255))
-        email = db.Column(db.String(255))
-        registration_date = db.Column(db.Date)
-
-    with app.app_context():
-        db.create_all()
+    login_manager = LoginManager(app)
 
     @app.route("/")
     def homepage():
         return render_template("index.html")
+    
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
 
+    
     @app.route("/summarize", methods=["POST"])
     def summarize_text():
         try:
@@ -46,5 +39,5 @@ def app_factory(config_name="test"):
 
         except Exception as e:
             return jsonify({"error": str(e)}), 500
-
-    return app, db, User
+        
+    return app;
