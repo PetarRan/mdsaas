@@ -1,6 +1,7 @@
 Flask
 psycopg2
 SQLAlchemy
+Flask-Login
 Flask-Migrate
 Flask-RESTful
 Flask-CORS

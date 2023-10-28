@@ -1,16 +1,24 @@
+from config.config import Config
 from flask import Flask, request, jsonify, render_template
+from flask_login import LoginManager
+from models.User import User
 from summarizer_nltk.summarizer import (
     generate_summary,
 ) 
-from config import Config
 
 def app_factory(config_name='development'):
     app = Flask(__name__)
     app.config.from_object(Config)
+    login_manager = LoginManager(app)
 
     @app.route("/")
     def homepage():
         return render_template("index.html")
+    
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+
     
     @app.route("/summarize", methods=["POST"])
     def summarize_text():

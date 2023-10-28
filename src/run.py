@@ -1,4 +1,4 @@
-from app import app_factory
+from src.app import app_factory
 
 app = app_factory(config_name='development')
 
