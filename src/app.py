@@ -1,6 +1,5 @@
 from config.config import Config
 from flask import Flask, request, jsonify, render_template
-from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from models.User import User
 from summarizer_nltk.summarizer import (
@@ -9,19 +8,10 @@ from summarizer_nltk.summarizer import (
 
 app = Flask(__name__)
 
-def app_factory(config_name='development'):
+def app_factory(config_name='test'):
     app.config.from_object(Config)
-    login_manager = LoginManager(app)
 
     db = SQLAlchemy(app)
-
-    class User(db.Model):
-        __tablename__ = "user"
-        user_id = db.Column(db.Integer, primary_key=True)
-        username = db.Column(db.String(255))
-        password = db.Column(db.String(255))
-        email = db.Column(db.String(255))
-        registration_date = db.Column(db.Date)
 
     with app.app_context():
         db.create_all()
@@ -29,10 +19,6 @@ def app_factory(config_name='development'):
     @app.route("/")
     def homepage():
         return render_template("index.html")
-    
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.query.get(int(user_id))
 
     
     @app.route("/summarize", methods=["POST"])

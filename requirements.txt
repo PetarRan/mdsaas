@@ -19,3 +19,4 @@ nltk
 # Development and Testing
 pytest
 pytest-cov
+Werkzeug

@@ -18,4 +18,3 @@ def test_user_insertion():
         db.session.commit()
         retrieved_user = User.query.filter_by(username='test_user').first()
         assert retrieved_user is None
-        #todo the created test user should be deleted after the test
