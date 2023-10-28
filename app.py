@@ -4,6 +4,7 @@ from summarizer.summarizer import (
     generate_summary,
 ) 
 from config.config import Config
+from api.doc_api import (_getAllSummaries, _saveDocuments)
 
 app = Flask(__name__)
 
