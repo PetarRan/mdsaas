@@ -1,7 +1,7 @@
 from config.config import Config
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
-from summarizer_nltk.summarizer import (
+from summarizer.summarizer import (
     generate_summary,
 ) 
 
