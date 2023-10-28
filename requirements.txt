@@ -1,0 +1,19 @@
+Flask
+psycopg2
+SQLAlchemy
+Flask-Migrate
+Flask-RESTful
+Flask-CORS
+Flask-WTF
+
+# NLP Libraries
+spaCy
+Gensim
+nltk
+
+# React Frontend Dependencies (optional, if using React for the frontend)
+# Add any specific React dependencies you require here
+
+# Development and Testing
+pytest
+pytest-cov
