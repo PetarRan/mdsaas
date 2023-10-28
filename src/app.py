@@ -1,7 +1,6 @@
 from config.config import Config
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
-from models.User import User
 from summarizer_nltk.summarizer import (
     generate_summary,
 ) 
@@ -12,6 +11,14 @@ def app_factory(config_name='test'):
     app.config.from_object(Config)
 
     db = SQLAlchemy(app)
+
+    class User(db.Model):
+        __tablename__ = "user"
+        user_id = db.Column(db.Integer, primary_key=True)
+        username = db.Column(db.String(255))
+        password = db.Column(db.String(255))
+        email = db.Column(db.String(255))
+        registration_date = db.Column(db.Date)
 
     with app.app_context():
         db.create_all()
