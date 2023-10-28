@@ -27,7 +27,35 @@ def app_factory(config_name='test'):
     def homepage():
         return render_template("index.html")
 
+    ## ---------------------------------------------------------------------------- ##
+    ## Logic for submitting the documents
+    ## ---------------------------------------------------------------------------- ##
+
+    @app.route('/submit-document', methods=['POST'])
+    def submit_document():
+        data = request.get_json()
+        if 'documents' in data:
+            document_ids = _saveDocuments(data['documents'])
+
+            response = {
+                'document_ids' : document_ids,
+                'message' : 'Documents submitted successfully'
+            }
+            return jsonify(response)
+        
+        return jsonify({"error" : "Bad documents provided" })
     
+    ## ---------------------------------------------------------------------------- ##
+    ## Logic for retrieveing the summary
+    ## ---------------------------------------------------------------------------- ##
+    @app.route('/retrieve-summary', methods=['GET'])
+    def retrieve_summary():
+        document_ids = request.args.getlist('document_ids')
+        summaries = _getAllSummaries(document_ids)
+
+    ## ---------------------------------------------------------------------------- ##
+    ## Summarization endpoint TODO: needs to take more @params (module of summarization)
+    ## ---------------------------------------------------------------------------- ##
     @app.route("/summarize", methods=["POST"])
     def summarize_text():
         try:
@@ -41,6 +69,7 @@ def app_factory(config_name='test'):
                 # Generate a summary based on the combined text
                 summary = generate_summary(combined_text)
 
+                ## TODO Instaed of returning the summary, save it in Summary table in DB
                 return jsonify({"summary": summary})
             else:
                 return jsonify({"error": "No documents provided"}), 400
