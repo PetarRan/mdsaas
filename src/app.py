@@ -40,4 +40,4 @@ def app_factory(config_name='development'):
         except Exception as e:
             return jsonify({"error": str(e)}), 500
         
-    return app;
+    return app
