@@ -1,10 +1,12 @@
 from flask import Flask, request, jsonify, render_template
 from summarizer_nltk.summarizer import (
     generate_summary,
-)  # Import the summarization function
+) 
+from config import Config
 
-def app_factory():
+def app_factory(config_name='development'):
     app = Flask(__name__)
+    app.config.from_object(Config)
 
     @app.route("/")
     def homepage():
