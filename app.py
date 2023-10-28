@@ -1,9 +1,9 @@
-from config.config import Config
 from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from summarizer.summarizer import (
     generate_summary,
 ) 
+from config.config import Config
 
 app = Flask(__name__)
 
