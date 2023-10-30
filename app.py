@@ -5,23 +5,15 @@ from summarizer.summarizer import (
 ) 
 from config.config import Config
 from api.doc_api import (_getAllSummaries, _saveDocuments)
+from models import db
 
 app = Flask(__name__)
 
 def app_factory(config_name='test'):
     app.config.from_object(Config)
 
-    db = SQLAlchemy(app)
-
-    class User(db.Model):
-        __tablename__ = "user"
-        user_id = db.Column(db.Integer, primary_key=True)
-        username = db.Column(db.String(255))
-        password = db.Column(db.String(255))
-        email = db.Column(db.String(255))
-        registration_date = db.Column(db.Date)
-
     with app.app_context():
+        db.init_app(app)
         db.create_all()
 
     @app.route("/")
@@ -78,4 +70,4 @@ def app_factory(config_name='test'):
         except Exception as e:
             return jsonify({"error": str(e)}), 500
         
-    return app, db, User
+    return app, db
