@@ -1,8 +1,9 @@
 from app import app_factory
 from flask_sqlalchemy import SQLAlchemy
+from models import User
 
 def test_user_insertion():
-    app, db, User = app_factory(config_name='test')
+    app, db = app_factory(config_name='test')
     with app.app_context():
         db.create_all()
 
