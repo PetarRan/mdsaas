@@ -6,7 +6,34 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>    
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // JavaScript for drag-and-drop and real-time feedback
+        document.addEventListener("DOMContentLoaded", function () {
+            var uploadForm = document.getElementById("upload-form");
+            var feedbackDiv = document.getElementById("feedback");
+
+            uploadForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+
+                fetch("/submit-document", {
+                    method: "POST",
+                    body: formData,
+                })
+                    .then(function (response) {
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (data.error) {
+                            feedbackDiv.innerHTML = "<p>Error: " + data.error + "</p>";
+                        } else {
+                            feedbackDiv.innerHTML = "<p>Upload Successful</p>";
+                        }
+                    });
+            });
+        });
+    </script>
 </head>
 <body>
     <div class="container">
@@ -18,6 +45,15 @@
                         <p class="card-text">Use this service to generate text summaries.</p>
                         <p class="card-text">Go to <a class="btn btn-sm btn-outline-secondary" href="/summarize">SUMMARIZE</a> to use the summarization API.</p>
                         <a href="login.html"><button>Login</button></a>
+                        <h1>Upload Documents</h1>
+                        <form id="upload-form" enctype="multipart/form-data">
+                            <div id="drop-area">
+                                <p>Drag and drop your documents here</p>
+                                <input type="file" id="fileInput" multiple accept=".txt, .pdf">
+                            </div>
+                            <button type="submit">Upload</button>
+                        </form>
+                        <div id="feedback"></div>
                     </div>
                 </div>
             </div>

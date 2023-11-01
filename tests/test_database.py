@@ -1,6 +1,7 @@
 from app import app_factory
 from flask_sqlalchemy import SQLAlchemy
-from models import User
+from models import User, db
+
 
 def test_user_insertion():
     app, db = app_factory(config_name='test')

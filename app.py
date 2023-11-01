@@ -5,9 +5,14 @@ from summarizer.summarizer import (
 ) 
 from config.config import Config
 from api.doc_api import (_getAllSummaries, _saveDocuments)
-from models import db
+from models import db, Document
 
 app = Flask(__name__)
+
+ALLOWED_EXTENSIONS = {'txt', 'pdf'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def app_factory(config_name='test'):
     app.config.from_object(Config)
@@ -24,19 +29,28 @@ def app_factory(config_name='test'):
     ## Logic for submitting the documents
     ## ---------------------------------------------------------------------------- ##
 
-    @app.route('/submit-document', methods=['POST'])
+    @app.route('/submit-document', methods=["POST"])
     def submit_document():
-        data = request.get_json()
-        if 'documents' in data:
-            document_ids = _saveDocuments(data['documents'])
+        uploaded_files = request.files.getlist('fileInput')
+        document_ids = []
+        
+        for file in uploaded_files:
+            if file and allowed_file(file.filename):
+                print("Recieved file:", file.filename)
+                document = Document(content = file.read().decode('utf-8'))
+                db.session.add(document)
+                db.session.commit()
+                document_ids.append(document.document_id)
 
+        if document_ids:
             response = {
-                'document_ids' : document_ids,
-                'message' : 'Documents submitted successfully'
+                'document_ids': document_ids,
+                'message': 'Documents uploaded successfully'
             }
             return jsonify(response)
-        
-        return jsonify({"error" : "Bad documents provided" })
+        else:
+            return jsonify({"error": "No valid documents uploaded"}), 400
+    
     
     ## ---------------------------------------------------------------------------- ##
     ## Logic for retrieveing the summary
