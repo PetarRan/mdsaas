@@ -31,57 +31,46 @@ def app_factory(config_name='test'):
     def homepage():
         return render_template("main/index.html")
     
-    @app.route('/', methods=['POST'])
-    def upload_file():
-        if request.method == 'POST':
-            if 'file' not in request.files:
-                flash('No file part')
-                return redirect(request.url)
-            file = request.files['file']
-            if file.filename == '':
-                flash("No selected file")
-                return redirect(request.url)
-            if file and allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                print("File uploaded")
-                document_ids = []
-                document = Document(content = file.read().decode('utf-8'))
-                print("document:", document)
-                # try:
-                #     db.session.add(document)
-                #     db.session.commit()
-                #     document_ids.append(document.document_id)
-                # except Exception as e:
-                #     return jsonify({"error": str(e)})
-                return redirect(url_for('upload_file', name = filename))
-        return 
+    # @app.route('/', methods=['POST'])
+    # def upload_file():
+    #     if 'files[]' not in request.files:
+    #             return jsonify({"error": "No files uploaded"}), 400
+    #     uploaded_files = request.files.getlist('files[]')
+    #     document_ids = []
+    #     for file in uploaded_files:
+    #         if file and allowed_file(file.filename):
+    #             document = Document(content=file.read()) ##.decode('utf-8'))
+    #             db.session.add(document)
+    #             db.session.commit()
+    #             document_ids.append(document.document_id)
+    #     if document_ids:
+    #         return jsonify({"document_ids": document_ids, "message": "Documents uploaded successfully"})
+    #     return jsonify({"error": "No valid documents uploaded"}), 400
+    
     ## ---------------------------------------------------------------------------- ##
     ## Logic for submitting the documents
     ## ---------------------------------------------------------------------------- ##
 
     @app.route('/submit-document', methods=["POST"])
     def submit_document():
-        uploaded_files = request.files.getlist('fileInput')
+        if 'files[]' not in request.files:
+                return jsonify({"error": "No files uploaded"}), 400
+        uploaded_files = request.files.getlist('files[]')
         document_ids = []
-        
+
         for file in uploaded_files:
             if file and allowed_file(file.filename):
-                print("Recieved file:", file.filename)
-                document = Document(content = file.read().decode('utf-8'))
+                document = Document(content=file.read().decode('utf-8'))
+                document.document_id = "10204"
                 db.session.add(document)
                 db.session.commit()
                 document_ids.append(document.document_id)
 
         if document_ids:
-            response = {
-                'document_ids': document_ids,
-                'message': 'Documents uploaded successfully'
-            }
-            return jsonify(response)
-        else:
-            return jsonify({"error": "No valid documents uploaded"}), 400
-    
+            return jsonify({"document_ids": document_ids, "message": "Documents uploaded successfully"})
+
+        return jsonify({"error": "No valid documents uploaded"}), 400
+
     
     ## ---------------------------------------------------------------------------- ##
     ## Logic for retrieveing the summary
@@ -98,8 +87,9 @@ def app_factory(config_name='test'):
     def summarize_text():
         try:
             data = request.get_json()
-            if "documents" in data:
-                documents = data["documents"]
+            if "document_ids" in data:
+                document_ids = data["document_ids"]
+                documents = [Document.query.get(id).content for id in document_ids]
 
                 # Concatenate all documents into a single text
                 combined_text = "\n".join(documents)
@@ -107,12 +97,24 @@ def app_factory(config_name='test'):
                 # Generate a summary based on the combined text
                 summary = generate_summary(combined_text)
 
-                ## TODO Instaed of returning the summary, save it in Summary table in DB
                 return jsonify({"summary": summary})
             else:
-                return jsonify({"error": "No documents provided"}), 400
+                return jsonify({"error": "No document IDs provided"}), 400
 
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+        
+
+
+    @app.route("/getDocument", methods=["GET"])
+    def getDocument():
+        document = Document.query.get("10204")
+        if document:
+            return jsonify({
+                'id': document.document_id,
+                'content': document.content
+            })
+        else:
+            return jsonify({'error': 'Document not found'}), 404
         
     return app, db
