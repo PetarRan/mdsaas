@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify, render_template
+import os
+from flask import Flask, request, jsonify, render_template, flash, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from summarizer.summarizer import (
     generate_summary,
@@ -6,13 +7,15 @@ from summarizer.summarizer import (
 from config.config import Config
 from api.doc_api import (_getAllSummaries, _saveDocuments)
 from models import db, Document
-
-app = Flask(__name__)
+from werkzeug.utils import secure_filename
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf'}
+UPLOAD_FOLDER = 'upload'
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+
 
 def app_factory(config_name='test'):
     app.config.from_object(Config)
@@ -21,10 +24,38 @@ def app_factory(config_name='test'):
         db.init_app(app)
         db.create_all()
 
+    def allowed_file(filename):
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
     @app.route("/")
     def homepage():
         return render_template("main/index.html")
-
+    
+    @app.route('/', methods=['POST'])
+    def upload_file():
+        if request.method == 'POST':
+            if 'file' not in request.files:
+                flash('No file part')
+                return redirect(request.url)
+            file = request.files['file']
+            if file.filename == '':
+                flash("No selected file")
+                return redirect(request.url)
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                print("File uploaded")
+                document_ids = []
+                document = Document(content = file.read().decode('utf-8'))
+                print("document:", document)
+                # try:
+                #     db.session.add(document)
+                #     db.session.commit()
+                #     document_ids.append(document.document_id)
+                # except Exception as e:
+                #     return jsonify({"error": str(e)})
+                return redirect(url_for('upload_file', name = filename))
+        return 
     ## ---------------------------------------------------------------------------- ##
     ## Logic for submitting the documents
     ## ---------------------------------------------------------------------------- ##

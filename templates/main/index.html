@@ -46,12 +46,12 @@
                         <p class="card-text">Go to <a class="btn btn-sm btn-outline-secondary" href="/summarize">SUMMARIZE</a> to use the summarization API.</p>
                         <a href="login.html"><button>Login</button></a>
                         <h1>Upload Documents</h1>
-                        <form id="upload-form" enctype="multipart/form-data">
+                        <form method="post" enctype="multipart/form-data">
                             <div id="drop-area">
                                 <p>Drag and drop your documents here</p>
-                                <input type="file" id="fileInput" multiple accept=".txt, .pdf">
+                                <input type="file" name="file" multiple accept=".txt, .pdf">
+                                <input type="submit" value="Upload">
                             </div>
-                            <button type="submit">Upload</button>
                         </form>
                         <div id="feedback"></div>
                     </div>
