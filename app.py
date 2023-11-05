@@ -52,7 +52,7 @@ def app_factory(config_name='test'):
 
     @app.route("/")
     def homepage():
-        return render_template("main/index.html")
+        return render_template("auth/login.html")
     
     @app.route("/login")
     def loginPage():

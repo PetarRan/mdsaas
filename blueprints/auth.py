@@ -37,3 +37,4 @@ def register():
     new_user = User(username=username, password=password, email=email)
     from tests.test_database import test_user_insertion
     test_user_insertion(new_user)
+    
