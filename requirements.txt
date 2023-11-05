@@ -21,3 +21,4 @@ nltk
 pytest
 pytest-cov
 Werkzeug
+PyPDF2
