@@ -77,9 +77,10 @@
                                         Title</h5>
                                     <p class="card-text">Date Created: January 1, 2023</p>
                                     <p class="card-text">Summarization Method: SpaCy</p>
-                                    <button class="btn btn-outline-primary"><i class="fa fa-eye"></i>&nbsp;View
+                                    <button class="btn btn-outline-info"><i class="fa fa-eye"></i>&nbsp;View
                                         Summary</button>
-                                    <button class="btn btn-outline-danger"> <i class="fa fa-trash"></i>&nbsp;Delete</button>
+                                    <button class="btn btn-outline-danger"> <i
+                                            class="fa fa-trash"></i>&nbsp;Delete</button>
                                 </div>
                             </div>
                             <!-- Add more cards as needed -->
@@ -146,6 +147,42 @@
             }
         }
 
+        // Update the modal content when clicking "View Document"
+        const viewDocumentButtons = documentContainer.querySelectorAll(".btn-outline-primary");
+        viewDocumentButtons.forEach((button, index) => {
+            button.addEventListener("click", (event) => {
+                const card = button.closest(".card");
+                const documentName = card.querySelector(".card-title").textContent;
+                // Here you can load the document content and set it in the modal body
+                const documentContent = "This is the content of the document.";
+                showDocumentInModal(documentName, documentContent);
+            });
+        });
+
+        // Update the modal content when clicking "View Summary"
+        const viewSummaryButtons = documentContainer.querySelectorAll(".btn-outline-info");
+        viewSummaryButtons.forEach((button, index) => {
+            button.addEventListener("click", (event) => {
+                const card = button.closest(".card");
+                const summaryTitle = card.querySelector(".card-title").textContent;
+                // Here you can load the summary content and set it in the modal body
+                const summaryContent = "This is the content of the summary.";
+                showDocumentInModal(summaryTitle, summaryContent);
+            });
+        });
+
+        function showDocumentInModal(title, content) {
+            const documentModal = document.getElementById("documentModal");
+            const modalTitle = documentModal.querySelector(".modal-title");
+            const modalBody = documentModal.querySelector(".modal-body");
+
+            modalTitle.textContent = title;
+            modalBody.textContent = content;
+
+            $(documentModal).modal("show");
+        }
+
+
         // Example: To add a card when you drag and drop a document
         // You can add an event listener for the "drop" event and create a card dynamically.
 
@@ -175,5 +212,25 @@
         });
     </script>
 </body>
+
+<div class="modal fade" id="documentModal" tabindex="-1" role="dialog" aria-labelledby="documentModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="documentModalLabel">Document Title / Summary Title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 </html>
