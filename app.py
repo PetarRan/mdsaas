@@ -31,25 +31,18 @@ def app_factory(config_name='test'):
     def homepage():
         return render_template("main/index.html")
     
-    # @app.route('/', methods=['POST'])
-    # def upload_file():
-    #     if 'files[]' not in request.files:
-    #             return jsonify({"error": "No files uploaded"}), 400
-    #     uploaded_files = request.files.getlist('files[]')
-    #     document_ids = []
-    #     for file in uploaded_files:
-    #         if file and allowed_file(file.filename):
-    #             document = Document(content=file.read()) ##.decode('utf-8'))
-    #             db.session.add(document)
-    #             db.session.commit()
-    #             document_ids.append(document.document_id)
-    #     if document_ids:
-    #         return jsonify({"document_ids": document_ids, "message": "Documents uploaded successfully"})
-    #     return jsonify({"error": "No valid documents uploaded"}), 400
+    @app.route("/login")
+    def loginPage():
+        return render_template("auth/login.html")
     
-    ## ---------------------------------------------------------------------------- ##
-    ## Logic for submitting the documents
-    ## ---------------------------------------------------------------------------- ##
+    @app.route("/register")
+    def registerPage():
+        return render_template("auth/register.html")
+    
+    @app.route("/dashboard")
+    def dashboard():
+        return render_template("main/dashboard.html")
+
 
     @app.route('/submit-document', methods=["POST"])
     def submit_document():
