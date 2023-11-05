@@ -1,15 +1,18 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask_login import UserMixin
 
 db = SQLAlchemy()
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = "user"
     user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255))
     password = db.Column(db.String(255))
     email = db.Column(db.String(255))
     registration_date = db.Column(db.Date)
+    def get_id(self):
+        return str(self.user_id)
 
 class Document(db.Model):
     __tablename__ = 'document'

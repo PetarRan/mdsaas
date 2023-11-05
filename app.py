@@ -6,10 +6,13 @@ from summarizer.summarizer import (
 ) 
 from config.config import Config
 from api.doc_api import (_getAllSummaries, _saveDocuments)
-from models import db, Document
+from models import db, Document, User
 from werkzeug.utils import secure_filename
 from PyPDF2 import PdfReader
 from blueprints.auth import auth_bp
+from flask_login import LoginManager, current_user
+
+
 
 ALLOWED_EXTENSIONS = ('txt', 'pdf')
 UPLOAD_FOLDER = 'upload'
@@ -19,6 +22,16 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 app.register_blueprint(auth_bp)
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    user = User.query.get(int(user_id)) 
+    if user:
+        return user
+    else:
+        return None
 
 def app_factory(config_name='test'):
     app.config.from_object(Config)
@@ -61,10 +74,10 @@ def app_factory(config_name='test'):
         uploaded_files = request.files.getlist('files[]')
         document_ids = []
 
-        # user_id = session.get("user_id")
-        user_id = 5
-        # if not user_id:
-        #     return jsonify({"error": "User not authenticated" }), 401
+        user_id = session.get("user_id")
+        user = current_user
+        if not user.is_authenticated:
+            return jsonify({"error": "User not authenticated" }), 401
         
         for file in uploaded_files:
             if file and allowed_file(file.filename):
@@ -130,5 +143,9 @@ def app_factory(config_name='test'):
             return render_template("document.html", content=content)
         else:
             return jsonify({'error': 'Document not found'}), 404
+        
+    @app.route('/login', methods=['GET'])
+    def login_form():
+        return render_template('login.html')
         
     return app, db
