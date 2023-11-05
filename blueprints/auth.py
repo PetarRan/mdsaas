@@ -1,5 +1,6 @@
 from flask import Blueprint, request, redirect, session, jsonify
 from models import db, User
+from flask_login import login_user
 
 auth_bp = Blueprint("authentication", __name__)
 
@@ -12,7 +13,7 @@ def login():
     user = User.query.filter_by(username = username, password=password).first()
 
     if user:
-        session["user_id"] = user.user_id
+        login_user(user)
         return jsonify({"message": "Login successful"})
     else:
         return jsonify({"error": "Invalid username or password"}), 401
