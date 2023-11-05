@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify, render_template, flash, redirect, url_for
+from flask import Flask, request, jsonify, render_template, flash, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from summarizer.summarizer import (
     generate_summary,
@@ -8,13 +8,16 @@ from config.config import Config
 from api.doc_api import (_getAllSummaries, _saveDocuments)
 from models import db, Document
 from werkzeug.utils import secure_filename
+from PyPDF2 import PdfReader
+from blueprints.auth import auth_bp
 
-ALLOWED_EXTENSIONS = {'txt', 'pdf'}
+ALLOWED_EXTENSIONS = ('txt', 'pdf')
 UPLOAD_FOLDER = 'upload'
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+app.register_blueprint(auth_bp)
 
 
 def app_factory(config_name='test'):
@@ -58,10 +61,23 @@ def app_factory(config_name='test'):
         uploaded_files = request.files.getlist('files[]')
         document_ids = []
 
+        # user_id = session.get("user_id")
+        user_id = 5
+        # if not user_id:
+        #     return jsonify({"error": "User not authenticated" }), 401
+        
         for file in uploaded_files:
             if file and allowed_file(file.filename):
-                document = Document(content=file.read().decode('utf-8'))
-                document.document_id = "10204"
+                if file.filename.endswith('.pdf'):
+                    pdf_reader = PdfReader(file)
+                    text = ""
+                    for page in pdf_reader.pages:
+                        text += page.extract_text()
+
+                    document = Document(user_id=user_id, content=text)
+                else:
+                    document = Document(user_id=user_id, content=file.read().decode('utf-8'))
+
                 db.session.add(document)
                 db.session.commit()
                 document_ids.append(document.document_id)
@@ -108,12 +124,10 @@ def app_factory(config_name='test'):
 
     @app.route("/getDocument", methods=["GET"])
     def getDocument():
-        document = Document.query.get("10204")
+        document = Document.query.get("6")
         if document:
-            return jsonify({
-                'id': document.document_id,
-                'content': document.content
-            })
+            content = document.content
+            return render_template("document.html", content=content)
         else:
             return jsonify({'error': 'Document not found'}), 404
         

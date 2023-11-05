@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -12,11 +13,11 @@ class User(db.Model):
 
 class Document(db.Model):
     __tablename__ = 'document'
-    document_id = db.Column(db.Integer, primary_key=True)
+    document_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))
-    title = db.Column(db.Text)
+    title = db.Column(db.Text, default="Untitled")
     content = db.Column(db.Text)
-    upload_date = db.Column(db.DateTime)
+    upload_date = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Summary(db.Model):
     __tablename__ = 'summary'
