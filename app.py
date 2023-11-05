@@ -1,21 +1,37 @@
 import os
-from flask import Flask, request, jsonify, render_template, flash, redirect, url_for
+from flask import Flask, request, jsonify, render_template, flash, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from summarizer.summarizer import (
     generate_summary,
 ) 
 from config.config import Config
 from api.doc_api import (_getAllSummaries, _saveDocuments)
-from models import db, Document
+from models import db, Document, User
 from werkzeug.utils import secure_filename
+from PyPDF2 import PdfReader
+from blueprints.auth import auth_bp
+from flask_login import LoginManager, current_user
 
-ALLOWED_EXTENSIONS = {'txt', 'pdf'}
+
+
+ALLOWED_EXTENSIONS = ('txt', 'pdf')
 UPLOAD_FOLDER = 'upload'
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+app.register_blueprint(auth_bp)
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    user = User.query.get(int(user_id)) 
+    if user:
+        return user
+    else:
+        return None
 
 def app_factory(config_name='test'):
     app.config.from_object(Config)
@@ -51,10 +67,23 @@ def app_factory(config_name='test'):
         uploaded_files = request.files.getlist('files[]')
         document_ids = []
 
+        user_id = session.get("user_id")
+        user = current_user
+        if not user.is_authenticated:
+            return jsonify({"error": "User not authenticated" }), 401
+        
         for file in uploaded_files:
             if file and allowed_file(file.filename):
-                document = Document(content=file.read().decode('utf-8'))
-                document.document_id = "10204"
+                if file.filename.endswith('.pdf'):
+                    pdf_reader = PdfReader(file)
+                    text = ""
+                    for page in pdf_reader.pages:
+                        text += page.extract_text()
+
+                    document = Document(user_id=user_id, content=text)
+                else:
+                    document = Document(user_id=user_id, content=file.read().decode('utf-8'))
+
                 db.session.add(document)
                 db.session.commit()
                 document_ids.append(document.document_id)
@@ -101,13 +130,15 @@ def app_factory(config_name='test'):
 
     @app.route("/getDocument", methods=["GET"])
     def getDocument():
-        document = Document.query.get("10204")
+        document = Document.query.get("6")
         if document:
-            return jsonify({
-                'id': document.document_id,
-                'content': document.content
-            })
+            content = document.content
+            return render_template("document.html", content=content)
         else:
             return jsonify({'error': 'Document not found'}), 404
+        
+    @app.route('/login', methods=['GET'])
+    def login_form():
+        return render_template('login.html')
         
     return app, db
