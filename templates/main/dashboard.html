@@ -231,34 +231,31 @@
 
         // Add a click event listener to confirm the upload
         confirmUploadButton.addEventListener("click", () => {
-            // You can implement file upload logic here.
-            // For example, you can use FormData to send the files to the server via AJAX.
-            // This code is just an example and should be replaced with your actual upload logic.
-
             const formData = new FormData();
             const files = fileInput.files;
 
             for (let i = 0; i < files.length; i++) {
-                formData.append("file[]", files[i]);
+                formData.append("files[]", files[i]);
             }
 
-            // Send the formData to the server for actual file upload
-            // Replace this with your server-side upload endpoint
-            // Example AJAX call:
-            // fetch('/upload', {
-            //     method: 'POST',
-            //     body: formData
-            // })
-            //     .then(response => {
-            //         if (response.ok) {
-            //             // File(s) uploaded successfully
-            //             // You can handle the response here
-            //         } else {
-            //             // Error handling
-            //         }
-            //     });
-
-            // Hide the confirmation modal
+            fetch('/submit-document', {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error("File upload failed");
+                    }
+                })
+                .then(data => {
+                    console.log(data);
+                })
+                .catch(error => {
+                    console.error(error);
+                });
             $(uploadConfirmationModal).modal("hide");
         });
     </script>
