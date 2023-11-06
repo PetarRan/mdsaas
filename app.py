@@ -10,6 +10,7 @@ from models import db, Document, User
 from werkzeug.utils import secure_filename
 from PyPDF2 import PdfReader
 from blueprints.auth import auth_bp
+from blueprints.documents import document_bp
 from flask_login import LoginManager, current_user, login_required
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
@@ -28,6 +29,7 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 app.register_blueprint(auth_bp)
+app.register_blueprint(document_bp)
 
 login_manager = LoginManager()
 login_manager.init_app(app)

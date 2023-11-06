@@ -65,47 +65,11 @@
                     <div class="tab-pane fade show active" id="documents" role="tabpanel"
                         aria-labelledby="documents-tab" style="height:100%;">
                         <div class="d-flex flex-row flex-wrap mt-4" style="height:100%;" id="document-container">
-                            <!-- Dummy Card -->
-                            <div class="card m-2 custom-card" id="dummy-card"
-                                style="max-width: 350px; min-width: 350px; max-height: 250px;">
-                                <div class="card-body">
-                                    <div class="custom-control custom-checkbox" style="text-align: end;">
-                                        <input type="checkbox" class="custom-control-input checkbox-on-card"
-                                            id="customCheck1">
-                                        <label class="custom-control-label" for="customCheck1"></label>
-                                    </div>
-                                    <h5 class="card-title"
-                                        style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Document
-                                        Name
-                                    </h5>
-                                    <p class="card-text">Date Uploaded: January 1, 2023</p>
-                                    <p class="card-text">Document type: PDF</p>
-                                    <button class="btn btn-outline-primary view-document"><i
-                                            class="fa fa-eye"></i>&nbsp;View
-                                        Document</button>
-                                    <button class="btn btn-outline-danger"> <i
-                                            class="fa fa-trash"></i>&nbsp;Delete</button>
-                                </div>
-                            </div>
-                            <!-- Add more cards as needed -->
+                            <!-- Add cards here!!! -->
                         </div>
                     </div>
                     <div class="tab-pane fade" id="summaries" role="tabpanel" aria-labelledby="summaries-tab">
-                        <div class="d-flex flex-row flex-wrap mt-4" id="summaries-container">
-                            <div class="card m-2" id="dummy-summary-card" style="max-width: 350px; min-width: 350px;">
-                                <div class="card-body">
-                                    <h5 class="card-title"
-                                        style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Summary
-                                        Title</h5>
-                                    <p class="card-text">Date Created: January 1, 2023</p>
-                                    <p class="card-text">Summarization Method: SpaCy</p>
-                                    <button class="btn btn-outline-info view-summary-button"><i
-                                            class="fa fa-eye"></i>&nbsp;View
-                                        Summary</button>
-                                    <button class="btn btn-outline-danger"> <i
-                                            class="fa fa-trash"></i>&nbsp;Delete</button>
-                                </div>
-                            </div>
+                        <div class="d-flex flex-row flex-wrap mt-4" id="summarization-container">
                             <!-- Add more cards as needed -->
                         </div>
                     </div>
@@ -121,6 +85,7 @@
                     <select class="form-control" id="summarization-method" disabled>
                         <option value="spacy">SpaCy</option>
                         <option value="nltk">NLTK</option>
+                        <option value="sumy">Sumy</option>
                         <!-- Add more options as needed -->
                     </select>
                 </div>
@@ -144,6 +109,21 @@
         const selectedFilesList = document.getElementById("selectedFilesList");
         const confirmUploadButton = document.getElementById("confirmUploadButton");
         const uploadConfirmationBody = document.getElementById("uploadConfirmationBody");
+
+        // Function to display a toast message using jQuery
+        function showToast(message) {
+            const toastHtml = '<div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000" style="position: fixed; top: 10px; left: 40%;">\
+                    <div class="toast-header">\
+                        <strong class="mr-auto">Notification</strong>\
+                        <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">\
+                            <span aria-hidden="true">&times;</span>\
+                        </button>\
+                    </div>\
+                    <div class="toast-body px-5 mt-2 mb-2">' + message + '</div>\
+                </div>';
+
+            $(toastHtml).appendTo('body').toast('show');
+        }
 
         // Add a click event listener to each card
         for (const card of cards) {
@@ -192,17 +172,23 @@
             });
         });
 
-        // Update the modal content when clicking "View Summary"
-        const viewSummaryButtons = summariesContainer.querySelectorAll(".view-summary-button");
-        viewSummaryButtons.forEach((button, index) => {
-            button.addEventListener("click", (event) => {
-                const card = button.closest(".card");
-                const summaryTitle = card.querySelector(".card-title").textContent;
-                // Here you can load the summary content and set it in the modal body
-                const summaryContent = "This is the content of the summary.";
-                showDocumentInModal(summaryTitle, summaryContent);
+        document.addEventListener("DOMContentLoaded", function () {
+            // This code will run once the DOM is fully loaded
+            const viewSummaryButtons = document.querySelectorAll(".view-summary-button");
+
+            viewSummaryButtons.forEach((button) => {
+                button.addEventListener("click", (event) => {
+                    // Handle the click event for each view summary button here
+                    // You can access the specific button and its related data using 'event.target' or 'button'
+
+                    // For example, you can get the summary ID associated with the clicked button:
+                    const summaryID = button.getAttribute("data-summary-id");
+
+                    // Now you can use this summary ID to perform some action (e.g., show the corresponding summary).
+                });
             });
         });
+
 
         function showDocumentInModal(title, content) {
             const documentModal = document.getElementById("documentModal");
@@ -219,6 +205,7 @@
         fileInput.addEventListener("change", (event) => {
             const files = event.target.files;
             selectedFilesList.innerHTML = "";
+
             for (let i = 0; i < files.length; i++) {
                 const li = document.createElement("li");
                 li.textContent = files[i].name;
@@ -235,10 +222,15 @@
             const files = fileInput.files;
 
             for (let i = 0; i < files.length; i++) {
-                formData.append("files[]", files[i]);
+                // Use the file name as the title
+                const title = files[i].name;
+                formData.append("title", title);
+
+                // Append the content with a unique key (e.g., "content0", "content1", etc.)
+                formData.append(`content${i}`, files[i]);
             }
 
-            fetch('/submit-document', {
+            fetch('/upload-document', {
                 method: 'POST',
                 body: formData,
                 credentials: 'same-origin'
@@ -252,12 +244,166 @@
                 })
                 .then(data => {
                     console.log(data);
+                    showToast("Upload successful!")
+                    // You can update the UI here to display the uploaded documents.
                 })
                 .catch(error => {
                     console.error(error);
                 });
             $(uploadConfirmationModal).modal("hide");
         });
+
+
+
+        function generateDocumentCard(documentName, dateUploaded, documentId, username) {
+            // Create a new card element
+            const card = document.createElement('div');
+            card.className = 'card m-2 custom-card';
+            card.id = `document-card-${documentId}`;
+            card.style = 'max-width: 350px; min-width: 350px; max-height: 250px;';
+
+            // Card body
+            const cardBody = document.createElement('div');
+            cardBody.className = 'card-body';
+
+            // Custom checkbox
+            const customControl = document.createElement('div');
+            customControl.className = 'custom-control custom-checkbox';
+            customControl.style = 'text-align: end;';
+            customControl.innerHTML = `
+        <input type="checkbox" class="custom-control-input checkbox-on-card" id="customCheck-${documentId}">
+        <label class="custom-control-label" for="customCheck-${documentId}"></label>
+    `;
+
+            // Card title
+            const cardTitle = document.createElement('h5');
+            cardTitle.className = 'card-title';
+            cardTitle.style = 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
+            cardTitle.textContent = documentName;
+
+            // Date uploaded
+            const dateUploadedText = document.createElement('p');
+            dateUploadedText.className = 'card-text';
+            dateUploadedText.textContent = `Date Uploaded: ${dateUploaded}`;
+
+            // Uploaded by:
+            const documentOwner = document.createElement('p');
+            documentOwner.className = 'card-text';
+            documentOwner.textContent = `Uploaded by: ${username}`;
+
+            // View Document button
+            const viewDocumentButton = document.createElement('button');
+            viewDocumentButton.className = 'btn btn-outline-primary view-document';
+            viewDocumentButton.innerHTML = `<i class="fa fa-eye"></i>&nbsp;View Document`;
+            viewDocumentButton.dataset.documentId = documentId;
+
+            // Delete button
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'btn btn-outline-danger delete-document mx-2';
+            deleteButton.innerHTML = `<i class="fa fa-trash"></i>&nbsp;Delete`;
+            deleteButton.dataset.documentId = documentId;
+
+            // Append elements to the card
+            cardBody.appendChild(customControl);
+            cardBody.appendChild(cardTitle);
+            cardBody.appendChild(dateUploadedText);
+            cardBody.appendChild(documentOwner)
+            cardBody.appendChild(viewDocumentButton);
+            cardBody.appendChild(deleteButton);
+
+            card.appendChild(cardBody);
+
+            // Append the card to a container in your HTML
+            const container = document.getElementById('document-container'); // Replace with your container ID
+            container.appendChild(card);
+        }
+
+        function generateSummaryCard(summary, method, summaryId) {
+            // Create a new card element
+            const card = document.createElement('div');
+            card.className = 'card m-2 custom-card';
+            card.id = `document-card-${summaryId}`;
+            card.style = 'max-width: 350px; min-width: 350px; max-height: 250px;';
+
+            // Card body
+            const cardBody = document.createElement('div');
+            cardBody.className = 'card-body';
+
+            // Custom checkbox
+            const customControl = document.createElement('div');
+            customControl.className = 'custom-control custom-checkbox';
+            customControl.style = 'text-align: end;';
+            customControl.innerHTML = `
+        <input type="checkbox" class="custom-control-input checkbox-on-card" id="customCheck-${summaryId}">
+        <label class="custom-control-label" for="customCheck-${summaryId}"></label>
+    `;
+
+            // Card title
+            const cardTitle = document.createElement('h5');
+            cardTitle.className = 'card-title';
+            cardTitle.style = 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
+            cardTitle.textContent = `${method} + summary`;
+
+            // Uploaded by:
+            const methodCard = document.createElement('p');
+            methodCard.className = 'card-text';
+            methodCard.textContent = `Method used: ${method}`;
+
+            // View Document button
+            const viewDocumentButton = document.createElement('button');
+            viewDocumentButton.className = 'btn btn-outline-info view-summary-button';
+            viewDocumentButton.innerHTML = `<i class="fa fa-eye"></i>&nbsp;View Document`;
+            viewDocumentButton.dataset.summaryId = summaryId;
+
+            // Delete button
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'btn btn-outline-danger delete-document mx-2';
+            deleteButton.innerHTML = `<i class="fa fa-trash"></i>&nbsp;Delete`;
+            deleteButton.dataset.summaryId = summaryId;
+
+            // Append elements to the card
+            cardBody.appendChild(cardTitle);
+            cardBody.appendChild(methodCard);
+            cardBody.appendChild(viewDocumentButton);
+            cardBody.appendChild(deleteButton);
+
+            card.appendChild(cardBody);
+
+            // Append the card to a container in your HTML
+            const container = document.getElementById('summarization-container'); // Replace with your container ID
+            container.appendChild(card);
+        }
+        // Function to fetch documents from the API and add document cards
+        function fetchAndDisplayDocuments() {
+            fetch("/get-all-documents")
+                .then((response) => response.json())
+                .then((documents) => {
+                    const documentContainer = document.getElementById("document-container");
+
+                    documents.forEach((document) => {
+                        generateDocumentCard(document.name, document.dateUploaded, document.id, document.user); //Add content later
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error fetching documents: " + error);
+                });
+
+            fetch("/get-all-summaries")
+                .then((response) => response.json())
+                .then((summaries) => {
+                    const summariesContainer = document.getElementById("summarization-container");
+
+                    summaries.forEach((summary) => {
+                        generateSummaryCard(summary.generated_summary, summary.method, summary.summary_id);
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error fetching documents: " + error);
+                });
+        }
+        // Call the function to fetch and display documents when the page loads
+        window.onload = fetchAndDisplayDocuments;
+
     </script>
 </body>
 
