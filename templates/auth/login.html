@@ -16,12 +16,12 @@
                     <img src="{{ url_for('static', filename='banner.png') }}" alt="Logo" class="logo img-fluid">
                 </div>
                 <h1 class="text-center">Login</h1>
-                <form method="POST" class="mt-4">
+                <form method="POST" action="/login" class="mt-4">
                     <div class="form-group">
-                        <input type="text" placeholder="Username" class="form-control" id="username" name="username" required>
+                        <input type="text" placeholder="Username" class="form-control" id="username" name="username" required value="{{request.form.username}}">
                     </div>
                     <div class="input-group mb-5">
-                        <input placeholder="Your password" type="password" class="form-control" id="password" name="password" required>
+                        <input placeholder="Your password" type="password" class="form-control" id="password" name="password" required value="{{request.form.password}}">
                         <div class="input-group-append">
                             <span class="input-group-text">
                                 <i id="showPasswordIcon" class="fa fa-eye" aria-hidden="true"></i>
@@ -29,6 +29,7 @@
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary btn-block">Login</button>
+                    <button type="submit" class="btn btn-primary btn-block"><a href="/register" style="text-decoration: none; color: white !important;">Sign up</a></button>
                 </form>
             </div>
         </div>

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, redirect, session, jsonify
+from flask import Blueprint, request, redirect, session, jsonify, url_for
 from models import db, User
 from flask_login import login_user
 
@@ -6,35 +6,44 @@ auth_bp = Blueprint("authentication", __name__)
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    data = request.get_json()
-    username = data.get("username")
-    password = data.get("password")
+    username = request.form.get("username")
+    password = request.form.get("password")
 
     user = User.query.filter_by(username = username, password=password).first()
+    
 
     if user:
         login_user(user)
-        return jsonify({"message": "Login successful"})
+        return redirect('/dashboard')
     else:
         return jsonify({"error": "Invalid username or password"}), 401
 
 @auth_bp.route("/logout", methods=["GET"])
 def logout():
     session.clear()
-    return jsonify({"message": "Logout successful"})
+    return redirect('/login')
 
 @auth_bp.route("/register", methods=["POST"])
 def register():
-    data = request.get_json()
-    username = data.get("username")
-    password = data.get("password")
-    email = data.get("email")
+    username = request.form.get("username")
+    password = request.form.get("password")
+    email = request.form.get("email")
 
+    # Check if the username is already taken
     existing_user = User.query.filter_by(username=username).first()
 
     if existing_user:
         return jsonify({"error": "Username is already taken"}), 400
-    
+
+    # Create a new user
     new_user = User(username=username, password=password, email=email)
-    from tests.test_database import test_user_insertion
-    test_user_insertion(new_user)
+
+    # Add the new user to the database and commit the changes
+    db.session.add(new_user)
+    db.session.commit()
+
+    # After successful registration, redirect to the login page
+    return redirect('/login')
+
+  
+    

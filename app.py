@@ -10,7 +10,14 @@ from models import db, Document, User
 from werkzeug.utils import secure_filename
 from PyPDF2 import PdfReader
 from blueprints.auth import auth_bp
-from flask_login import LoginManager, current_user
+from flask_login import LoginManager, current_user, login_required
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+
+class LoginForm(FlaskForm):
+    username = StringField('Username')
+    password = PasswordField('Password')
+    submit = SubmitField('Submit')
 
 
 
@@ -45,7 +52,7 @@ def app_factory(config_name='test'):
 
     @app.route("/")
     def homepage():
-        return render_template("main/index.html")
+        return render_template("auth/login.html")
     
     @app.route("/login")
     def loginPage():
@@ -56,6 +63,7 @@ def app_factory(config_name='test'):
         return render_template("auth/register.html")
     
     @app.route("/dashboard")
+    @login_required
     def dashboard():
         return render_template("main/dashboard.html")
 
@@ -137,8 +145,18 @@ def app_factory(config_name='test'):
         else:
             return jsonify({'error': 'Document not found'}), 404
         
-    @app.route('/login', methods=['GET'])
-    def login_form():
-        return render_template('login.html')
+    # @app.route('/login', methods=['GET', 'POST'])
+    # def login():
+    #     if current_user.is_authenticated:
+    #         return redirect(url_for('index'))
+    #     form = LoginForm()
+    #     if form.validate_on_submit():
+    #         user = User.query.filter_by(username=form.username.data).first()
+    #         if user is None or not user.check_password(form.password.data):
+    #             flash('Invalid username or password')
+    #             return redirect(url_for('/auth/login'))
+    #         login_user(user, remember=form.remember_me.data)
+    #         return redirect(url_for('index'))
+    #     return render_template('auth/login.html', title='Sign In', form=form)
         
     return app, db
