@@ -97,7 +97,7 @@
 
     <script>
         const documentContainer = document.getElementById("document-container");
-        const summariesContainer = document.getElementById("summaries-container");
+        const summariesContainer = document.getElementById("summarization-container");
         const selectSummarizeButton = document.getElementById("summarize-button");
         const summarizationMethodSelect = document.getElementById("summarization-method");
 
@@ -125,66 +125,22 @@
             $(toastHtml).appendTo('body').toast('show');
         }
 
-        // Add a click event listener to each card
-        for (const card of cards) {
-            const checkbox = card.querySelector("input[type='checkbox']");
-
-            // Toggle selection when the card or its associated checkbox is clicked
-            card.addEventListener("click", (event) => {
-                toggleSelection(card, checkbox);
-            });
-
-            checkbox.addEventListener("click", (event) => {
-                toggleSelection(card, checkbox);
-            });
+        function clearDocumentContainer() {
+            const documentContainerLoc = document.getElementById("document-container");
+            documentContainerLoc.innerHTML = "";
         }
 
-        function toggleSelection(card, checkbox) {
-            card.classList.toggle("selected");
-            checkbox.checked = card.classList.contains("selected");
-
-            // Add or remove the card from the set of selected cards
-            if (card.classList.contains("selected")) {
-                selectedCards.add(card);
-            } else {
-                selectedCards.delete(card);
-            }
-
-            // Enable or disable the options based on the selected card count
-            if (selectedCards.size > 0) {
-                selectSummarizeButton.disabled = false;
-                summarizationMethodSelect.disabled = false;
-            } else {
-                selectSummarizeButton.disabled = true;
-                summarizationMethodSelect.disabled = true;
-            }
+        function clearSummaryContainer() {
+            const summaryContainerLoc = document.getElementById("summarization-container");
+            summaryContainerLoc.innerHTML = "";
         }
-
-        // Update the modal content when clicking "View Document"
-        const viewDocumentButtons = documentContainer.querySelectorAll(".view-document");
-        viewDocumentButtons.forEach((button, index) => {
-            button.addEventListener("click", (event) => {
-                const card = button.closest(".card");
-                const documentName = card.querySelector(".card-title").textContent;
-                // Here you can load the document content and set it in the modal body
-                const documentContent = "This is the content of the document.";
-                showDocumentInModal(documentName, documentContent);
-            });
-        });
 
         document.addEventListener("DOMContentLoaded", function () {
-            // This code will run once the DOM is fully loaded
             const viewSummaryButtons = document.querySelectorAll(".view-summary-button");
 
             viewSummaryButtons.forEach((button) => {
                 button.addEventListener("click", (event) => {
-                    // Handle the click event for each view summary button here
-                    // You can access the specific button and its related data using 'event.target' or 'button'
-
-                    // For example, you can get the summary ID associated with the clicked button:
                     const summaryID = button.getAttribute("data-summary-id");
-
-                    // Now you can use this summary ID to perform some action (e.g., show the corresponding summary).
                 });
             });
         });
@@ -245,7 +201,8 @@
                 .then(data => {
                     console.log(data);
                     showToast("Upload successful!")
-                    // You can update the UI here to display the uploaded documents.
+                    clearDocumentContainer();
+                    fetchAndDisplayDocuments();
                 })
                 .catch(error => {
                     console.error(error);
@@ -279,7 +236,31 @@
                 });
         }
 
-
+        function deleteSummary(summaryId) {
+            // Make a DELETE request to your server's delete document route
+            fetch(`/delete-summary/${summaryId}`, {
+                method: 'DELETE',
+                credentials: 'same-origin'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error("Document deletion failed");
+                    }
+                })
+                .then(data => {
+                    console.log(data);
+                    showToast("Document deleted successfully!");
+                    const card = document.getElementById(`document-card-${summaryId}`);
+                    if (card) {
+                        card.remove();
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        }
 
         function generateDocumentCard(documentName, dateUploaded, documentId, username) {
             // Create a new card element
@@ -331,6 +312,8 @@
             deleteButton.addEventListener("click", (event) => {
                 const documentId = event.target.dataset.documentId;
                 deleteDocument(documentId);
+                clearDocumentContainer();
+                fetchAndDisplayDocuments();
             });
 
             // Append elements to the card
@@ -381,7 +364,7 @@
             // View Document button
             const viewDocumentButton = document.createElement('button');
             viewDocumentButton.className = 'btn btn-outline-info view-summary-button';
-            viewDocumentButton.innerHTML = `<i class="fa fa-eye"></i>&nbsp;View Document`;
+            viewDocumentButton.innerHTML = `<i class="fa fa-eye"></i>&nbsp;View Summmary`;
             viewDocumentButton.dataset.summaryId = summaryId;
 
             // Delete button
@@ -389,6 +372,12 @@
             deleteButton.className = 'btn btn-outline-danger delete-document mx-2';
             deleteButton.innerHTML = `<i class="fa fa-trash"></i>&nbsp;Delete`;
             deleteButton.dataset.summaryId = summaryId;
+            deleteButton.addEventListener("click", (event) => {
+                const summaryId = event.target.dataset.summaryId;
+                deleteSummary(summaryId);
+                clearSummaryContainer();
+                fetchAndDisplayDocuments();
+            });
 
             // Append elements to the card
             cardBody.appendChild(cardTitle);
@@ -428,7 +417,96 @@
                 .catch((error) => {
                     console.error("Error fetching documents: " + error);
                 });
+
+            // Add a 500ms delay before attaching the event listeners
+            setTimeout(() => {
+                reinitializeAll();
+            }, 500);
+
         }
+
+        function reinitializeAll() {
+            const viewDocumentButtons = documentContainer.querySelectorAll(".view-document");
+            const viewSummaryButtons = summariesContainer.querySelectorAll(".view-summary-button");
+
+
+            viewDocumentButtons.forEach((button) => {
+                button.addEventListener("click", (event) => {
+                    const card = button.closest(".card");
+                    const documentName = card.querySelector(".card-title").textContent;
+                    const documentId = button.dataset.documentId;
+
+                    fetch(`/get-document-content/${documentId}`)
+                        .then((response) => {
+                            if (response.ok) {
+                                return response.text();
+                            } else {
+                                throw new Error("Failed to fetch document content");
+                            }
+                        })
+                        .then((content) => {
+                            showDocumentInModal(documentName, content);
+                        })
+                        .catch((error) => {
+                            console.error("Error fetching document content: " + error);
+                        });
+                });
+            });
+
+            viewSummaryButtons.forEach((button) => {
+                button.addEventListener("click", (event) => {
+                    const card = button.closest(".card");
+                    const summaryName = card.querySelector(".card-title").textContent;
+                    const summaryId = button.dataset.summaryId;
+
+                    fetch(`/get-summary-content/${summaryId}`)
+                        .then((response) => {
+                            if (response.ok) {
+                                return response.text();
+                            } else {
+                                throw new Error("Failed to fetch summary content");
+                            }
+                        })
+                        .then((content) => {
+                            showDocumentInModal(summaryName, content);
+                        })
+                        .catch((error) => {
+                            console.error("Error fetching summary content: " + error);
+                        });
+                });
+            });
+
+            const cards = documentContainer.getElementsByClassName("card");
+            for (const card of cards) {
+                const checkbox = card.querySelector("input[type='checkbox']");
+
+                checkbox.addEventListener("click", (event) => {
+                    toggleSelection(card, checkbox);
+                });
+            }
+
+            function toggleSelection(card, checkbox) {
+                card.classList.toggle("selected");
+                checkbox.checked = card.classList.contains("selected");
+
+                // Add or remove the card from the set of selected cards
+                if (card.classList.contains("selected")) {
+                    selectedCards.add(card);
+                } else {
+                    selectedCards.delete(card);
+                }
+
+                // Enable or disable the options based on the selected card count
+                if (selectedCards.size > 0) {
+                    selectSummarizeButton.disabled = false;
+                    summarizationMethodSelect.disabled = false;
+                } else {
+                    selectSummarizeButton.disabled = true;
+                    summarizationMethodSelect.disabled = true;
+                }
+            }
+        }
+
         // Call the function to fetch and display documents when the page loads
         window.onload = fetchAndDisplayDocuments;
 

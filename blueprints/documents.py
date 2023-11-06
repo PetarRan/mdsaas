@@ -43,6 +43,23 @@ def delete_document(document_id):
             return jsonify({"error": "You don't have permission to delete this document"}), 403
     else:
         return jsonify({"error": f"Document with ID {document_id} not found"}), 404
+    
+
+# Get content of a document
+@document_bp.route('/get-document-content/<int:document_id>')
+@login_required
+def get_document_content(document_id):
+    # Fetch the document based on document_id
+    document = Document.query.get(document_id)
+
+    if document:
+        # Check if the document belongs to the current user
+        if document.user_id == current_user.user_id:
+            return document.content  # Assuming the 'content' attribute holds the document content
+        else:
+            return "Unauthorized - You don't have permission to access this document", 403
+    else:
+        return "Document not found", 404
 
 # Upload a document for the current user
 
@@ -114,6 +131,24 @@ def get_all_summaries():
         summary_list.append(summary_data)
 
     return jsonify(summary_list)
+
+
+# Get content of a summary
+@document_bp.route('/get-summary-content/<int:summary_id>')
+@login_required
+def get_summary_content(summary_id):
+    # Fetch the document based on document_id
+    summary = Summary.query.get(summary_id)
+
+    if summary:
+        # Check if the document belongs to the current user
+        if summary.user_id == current_user.user_id:
+            return summary.generated_summary  # Assuming the 'content' attribute holds the document content
+        else:
+            return "Unauthorized - You don't have permission to access this document", 403
+    else:
+        return "Document not found", 404
+
 
 # Delete a summary by summary_id for the current user
 
