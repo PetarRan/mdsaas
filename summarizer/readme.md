@@ -25,7 +25,12 @@ pip install nltk
 cd summarizer-nltk
 ```
 
-5. Run the summarization script by executing the following command:
+5. Install the SpaCy requirements:
+```bash
+python -m spacy download en_core_web_sm
+```
+
+6. Run the summarization script by executing the following command:
 
 ```bash
 python summarizer.py

@@ -13,6 +13,7 @@ PyPDF2
 spaCy
 Gensim
 nltk
+sumy
 
 # React Frontend Dependencies (optional, if using React for the frontend)
 # Add any specific React dependencies you require here
