@@ -10,7 +10,7 @@ from models import db, Document, User
 from werkzeug.utils import secure_filename
 from PyPDF2 import PdfReader
 from blueprints.auth import auth_bp
-from flask_login import LoginManager, current_user, login_user
+from flask_login import LoginManager, current_user, login_required
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 
@@ -63,6 +63,7 @@ def app_factory(config_name='test'):
         return render_template("auth/register.html")
     
     @app.route("/dashboard")
+    @login_required
     def dashboard():
         return render_template("main/dashboard.html")
 
