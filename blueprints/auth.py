@@ -1,5 +1,6 @@
 from flask import Blueprint, request, redirect, session, jsonify, url_for
 from models import db, User
+from datetime import datetime
 from flask_login import login_user
 
 auth_bp = Blueprint("authentication", __name__)
@@ -34,16 +35,14 @@ def register():
 
     if existing_user:
         return jsonify({"error": "Username is already taken"}), 400
+    
+    current_datetime = datetime.now()
 
     # Create a new user
-    new_user = User(username=username, password=password, email=email)
+    new_user = User(username=username, password=password, email=email, registration_date=current_datetime)
 
     # Add the new user to the database and commit the changes
     db.session.add(new_user)
     db.session.commit()
-
-    # After successful registration, redirect to the login page
-    return redirect('/login')
-
-  
+    return redirect('/login?success=true')
     
