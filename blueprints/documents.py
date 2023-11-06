@@ -1,6 +1,7 @@
 from flask_login import current_user, login_required
 from flask import Blueprint, request, jsonify
 from models import db, Document, Summary
+import PyPDF2
 
 document_bp = Blueprint("documents", __name__)
 
@@ -34,7 +35,7 @@ def delete_document(document_id):
     document = Document.query.get(document_id)
     if document:
         # Check if the document belongs to the current user
-        if document.user_id == current_user.id:
+        if document.user_id == current_user.user_id:
             db.session.delete(document)
             db.session.commit()
             return jsonify({"message": f"Document with ID {document_id} deleted successfully"})
@@ -46,6 +47,9 @@ def delete_document(document_id):
 # Upload a document for the current user
 
 
+from flask import request, jsonify
+import PyPDF2
+
 @document_bp.route("/upload-document", methods=["POST"])
 @login_required
 def upload_document():
@@ -54,13 +58,19 @@ def upload_document():
         document_ids = []
 
         for i in range(len(request.files)):
-            # Get the content for each file
-            content = request.files.get(f"content{i}").read().decode("utf-8")
-            # Default title if not provided
-            title = request.form.get(f"title{i}", "Untitled")
+            # Get the content for each file and extract text from PDF files
+            file = request.files.get(f"content{i}")
+            title = request.form.get(f"title{i}", "Untitled")  # Default title if not provided
 
-            new_document = Document(
-                title=title, content=content, user_id=current_user.user_id)
+            if file.filename.lower().endswith(".pdf"):
+                # This is a PDF file, extract text using PyPDF2
+                pdf_text = extract_text_from_pdf(file)
+                content = pdf_text
+            else:
+                # For non-PDF files, simply read the content
+                content = file.read().decode("utf-8")
+
+            new_document = Document(title=title, content=content, user_id=current_user.user_id)
             db.session.add(new_document)
             db.session.commit()
             document_ids.append(new_document.document_id)
@@ -71,6 +81,18 @@ def upload_document():
             return jsonify({"error": "No valid documents uploaded"}), 400
     else:
         return jsonify({"error": "No content provided"}), 400
+
+def extract_text_from_pdf(pdf_file):
+    pdf_text = ""
+    try:
+        pdf_reader = PyPDF2.PdfReader(pdf_file)
+        for page in pdf_reader.pages:
+            pdf_text += page.extract_text()
+    except PyPDF2.utils.PdfrReadError:
+        # Handle invalid or corrupted PDF files
+        pdf_text = "Invalid or corrupted PDF file"
+    return pdf_text
+
 
 
 # SUMMARIES
@@ -102,7 +124,7 @@ def delete_summary(summary_id):
     summary = Summary.query.get(summary_id)
     if summary:
         # Check if the summary belongs to the current user
-        if summary.user_id == current_user.id:
+        if summary.user_id == current_user.user_id:
             db.session.delete(summary)
             db.session.commit()
             return jsonify({"message": f"Summary with ID {summary_id} deleted successfully"})

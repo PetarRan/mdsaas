@@ -224,7 +224,7 @@
             for (let i = 0; i < files.length; i++) {
                 // Use the file name as the title
                 const title = files[i].name;
-                formData.append("title", title);
+                formData.append(`title${i}`, title);
 
                 // Append the content with a unique key (e.g., "content0", "content1", etc.)
                 formData.append(`content${i}`, files[i]);
@@ -252,6 +252,32 @@
                 });
             $(uploadConfirmationModal).modal("hide");
         });
+
+        function deleteDocument(documentId) {
+            // Make a DELETE request to your server's delete document route
+            fetch(`/delete-document/${documentId}`, {
+                method: 'DELETE',
+                credentials: 'same-origin'
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error("Document deletion failed");
+                    }
+                })
+                .then(data => {
+                    console.log(data);
+                    showToast("Document deleted successfully!");
+                    const card = document.getElementById(`document-card-${documentId}`);
+                    if (card) {
+                        card.remove();
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        }
 
 
 
@@ -302,6 +328,10 @@
             deleteButton.className = 'btn btn-outline-danger delete-document mx-2';
             deleteButton.innerHTML = `<i class="fa fa-trash"></i>&nbsp;Delete`;
             deleteButton.dataset.documentId = documentId;
+            deleteButton.addEventListener("click", (event) => {
+                const documentId = event.target.dataset.documentId;
+                deleteDocument(documentId);
+            });
 
             // Append elements to the card
             cardBody.appendChild(customControl);
@@ -313,8 +343,7 @@
 
             card.appendChild(cardBody);
 
-            // Append the card to a container in your HTML
-            const container = document.getElementById('document-container'); // Replace with your container ID
+            const container = document.getElementById('document-container');
             container.appendChild(card);
         }
 
@@ -344,7 +373,7 @@
             cardTitle.style = 'white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
             cardTitle.textContent = `${method} + summary`;
 
-            // Uploaded by:
+            // Summary by method:
             const methodCard = document.createElement('p');
             methodCard.className = 'card-text';
             methodCard.textContent = `Method used: ${method}`;
@@ -369,8 +398,7 @@
 
             card.appendChild(cardBody);
 
-            // Append the card to a container in your HTML
-            const container = document.getElementById('summarization-container'); // Replace with your container ID
+            const container = document.getElementById('summarization-container');
             container.appendChild(card);
         }
         // Function to fetch documents from the API and add document cards
