@@ -93,7 +93,8 @@
                                 <!-- Display the date and full article text here -->
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-primary" id="addToDocumentsButton"><i class="fa fa-plus"></i>&nbsp;Add to
+                                <button type="button" class="btn btn-outline-primary" id="addToDocumentsButton"><i
+                                        class="fa fa-plus"></i>&nbsp;Add to
                                     Documents</button>
                             </div>
                         </div>
@@ -738,25 +739,65 @@
         });
 
         function selectNewsSource(source) {
-            const title = "Article Title"; // Replace with the actual title
-            const date = "15. November 2023";   // Replace with the actual date
-            const content = "Full Article Text"; // Replace with the actual content
+            const selectedSource = source;
 
-            // Set the title, date, and content in the "Display News Article" modal
-            document.getElementById("displayNewsArticleModalLabel").textContent = title + " - " + date;
-            document.querySelector("#displayNewsArticleModal .modal-body").innerHTML = `<p>${content}</p>`;
+            fetch(`/get-news/${selectedSource}`)
+                .then(response => response.json())
+                .then(articleData => {
+                    if (articleData) {
+                        const { title, date, description } = articleData;
 
-            // Show the "Display News Article" modal
-            displayNewsArticleModal.show();
+                        document.getElementById("displayNewsArticleModalLabel").textContent = `${title} - ${date}`;
+                        document.querySelector("#displayNewsArticleModal .modal-body").innerHTML = `<p>${description}</p>`;
+                    } else {
+                        // Handle the case where no article data is available
+                        document.getElementById("displayNewsArticleModalLabel").textContent = "No Article Available";
+                        document.querySelector("#displayNewsArticleModal .modal-body").innerHTML = "Sorry, no article is available for this source.";
+                    }
+                    displayNewsArticleModal.show();
+                    document.getElementById("addToDocumentsButton").addEventListener("click", () => {
+                        addNewsToDocuments(articleData.title, articleData.description);
+                        displayNewsArticleModal.hide()
+                        clearDocumentContainer()
+                        clearSummaryContainer()
+                        fetchAndDisplayDocuments()
+                    });
+
+                })
+                .catch(error => {
+                    console.error("Error fetching article data:", error);
+                });
         }
 
-        function createNewsSourceCard(title, imgSrc) {
+        function addNewsToDocuments(title, description) {
+            // Make an HTTP POST request to add the article as a document
+            fetch("/upload-document-news", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    title: title, // Use the article title
+                    content: description, // Use the article description as content
+                }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    showToast("News article added.")
+                })
+                .catch(error => {
+                    console.error("Error adding the article to documents:", error);
+                });
+        }
+
+        function createNewsSourceCard(title, imgSrc, source) {
             const cardContainer = document.createElement("div");
             cardContainer.className = "col-6 col-md-4 col-lg-3 mb-4";
 
             const card = document.createElement("a");
             card.className = "card news-source-card";
-            card.dataset.source = title;
+            card.dataset.source = source;
             card.href = "#";
             card.style.maxWidth = "250px";
             card.style.minWidth = "250px";
@@ -787,14 +828,18 @@
                 card.style.boxShadow = "none";
             });
 
+            card.addEventListener("click", () => {
+                selectNewsSource(card.dataset.source);
+                chooseNewsSourceModal.hide();
+            });
+
             return cardContainer;
         }
 
-        // Example usage:
         const newsSources = [
             { title: "The Wall Street Journal", imgSrc: "{{ url_for('static', filename='wsj.png') }}", value: "wsj.com" },
             { title: "The BBC", imgSrc: "{{ url_for('static', filename='bbc.png') }}", value: "bbc.com" },
-            { title: "Europa Press", imgSrc: "{{ url_for('static', filename='europapress.png') }}", value: "europapress.es" },
+            { title: "Europa Press", imgSrc: "{{ url_for('static', filename='europapress.png') }}", value: "europarl.europa.eu" },
             { title: "The Daily Mail UK", imgSrc: "{{ url_for('static', filename='dailymail.png') }}", value: "dailymail.co.uk" },
             { title: "USA Today", imgSrc: "{{ url_for('static', filename='usatoday.png') }}", value: "usatoday.com" },
             { title: "The European Comission", imgSrc: "{{ url_for('static', filename='eceuropa.png') }}", value: "ec.europa.eu" },
@@ -802,20 +847,14 @@
             { title: "BBC News 24", imgSrc: "{{ url_for('static', filename='bbc24.png') }}", value: "bbc24news.com" },
             { title: "The Daily Wire", imgSrc: "{{ url_for('static', filename='dailywire.png') }}", value: "dailywire.com" },
             { title: "Paradigm", imgSrc: "{{ url_for('static', filename='paradigm.png') }}", value: "wallstreetdaily.com" },
-            { title: "Yahoo News", imgSrc: "{{ url_for('static', filename='yahoo.png') }}", value: "tw.news.yahoo.com" },
+            { title: "Yahoo News", imgSrc: "{{ url_for('static', filename='yahoo.png') }}", value: "news.yahoo.com" },
             // Add more news sources as needed
         ];
 
         const cardContainer = document.querySelector(".card-container");
         newsSources.forEach(source => {
-            const newsSourceCard = createNewsSourceCard(source.title, source.imgSrc);
+            const newsSourceCard = createNewsSourceCard(source.title, source.imgSrc, source.value);
             cardContainer.appendChild(newsSourceCard);
-            document.querySelectorAll(".news-source-card").forEach((card) => {
-                card.addEventListener("click", () => {
-                    selectNewsSource(card.dataset.source);
-                    chooseNewsSourceModal.hide();
-                });
-            });
         });
 
         // Call the function to fetch and display documents when the page loads

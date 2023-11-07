@@ -96,6 +96,7 @@ def upload_document():
             return jsonify({"error": "No valid documents uploaded"}), 400
     else:
         return jsonify({"error": "No content provided"}), 400
+    
 
 @document_bp.route("/upload-document-link", methods=["POST"])
 @login_required
@@ -122,6 +123,22 @@ def upload_document_link():
     except requests.exceptions.RequestException as e:
         return jsonify({"error": "Failed to fetch document content from the provided link"}), 400
     
+@document_bp.route("/upload-document-news", methods=["POST"])
+@login_required
+def upload_document_news():
+    try:
+
+        title = request.json.get("title")
+        content = request.json.get("content")
+
+        new_document = Document(
+            title=title, content=content, user_id=current_user.user_id)
+        db.session.add(new_document)
+        db.session.commit()
+
+        return jsonify({"document_id": new_document.document_id, "message": "Document uploaded successfully"})
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": "Failed to fetch document content from the provided link"}), 400
 
 
 def sanitize_text(text):
