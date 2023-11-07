@@ -1,7 +1,8 @@
+import requests
+from flask import request, jsonify
 from flask_login import current_user, login_required
 from flask import Blueprint, request, jsonify
 from models import db, Document, Summary
-import PyPDF2
 
 document_bp = Blueprint("documents", __name__)
 
@@ -41,7 +42,7 @@ def delete_document(document_id):
             return jsonify({"error": "You don't have permission to delete this document"}), 403
     else:
         return jsonify({"error": f"Document with ID {document_id} not found"}), 404
-    
+
 
 # Get content of a document
 @document_bp.route('/get-document-content/<int:document_id>')
@@ -62,9 +63,6 @@ def get_document_content(document_id):
 # Upload a document for the current user
 
 
-from flask import request, jsonify
-import PyPDF2
-
 @document_bp.route("/upload-document", methods=["POST"])
 @login_required
 def upload_document():
@@ -75,7 +73,8 @@ def upload_document():
         for i in range(len(request.files)):
             # Get the content for each file and extract text from PDF files
             file = request.files.get(f"content{i}")
-            title = request.form.get(f"title{i}", "Untitled")  # Default title if not provided
+            # Default title if not provided
+            title = request.form.get(f"title{i}", "Untitled")
 
             if file.filename.lower().endswith(".pdf"):
                 # This is a PDF file, extract text using PyPDF2
@@ -85,7 +84,8 @@ def upload_document():
                 # For non-PDF files, simply read the content
                 content = file.read().decode("utf-8")
 
-            new_document = Document(title=title, content=content, user_id=current_user.user_id)
+            new_document = Document(
+                title=title, content=content, user_id=current_user.user_id)
             db.session.add(new_document)
             db.session.commit()
             document_ids.append(new_document.document_id)
@@ -97,6 +97,39 @@ def upload_document():
     else:
         return jsonify({"error": "No content provided"}), 400
 
+@document_bp.route("/upload-document-link", methods=["POST"])
+@login_required
+def upload_document_link():
+    #data = request.get_json()
+    link = request.json.get("link")
+    title = request.json.get("title", "Untitled")
+
+    if not link:
+        return jsonify({"error": "No document link provided"}), 400
+
+    try:
+        response = requests.get(link)
+        response.raise_for_status()
+        
+        content = response.text
+
+        content = sanitize_text(content)
+        new_document = Document(title=title, content=content, user_id=current_user.user_id)
+        db.session.add(new_document)
+        db.session.commit()
+
+        return jsonify({"document_id": new_document.document_id, "message": "Document uploaded successfully"})
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": "Failed to fetch document content from the provided link"}), 400
+    
+
+
+def sanitize_text(text):
+    # Remove null characters and other non-printable characters
+    sanitized_text = ''.join(char for char in text if char.isprintable())
+    return sanitized_text
+
+import PyPDF2
 def extract_text_from_pdf(pdf_file):
     pdf_text = ""
     try:
@@ -107,3 +140,4 @@ def extract_text_from_pdf(pdf_file):
         # Handle invalid or corrupted PDF files
         pdf_text = "Invalid or corrupted PDF file"
     return pdf_text
+

@@ -28,6 +28,10 @@
         <div class="row" style="height: 90vh;">
             <div class="col-xl-10 col-sm-6 col-6">
                 <h2 class="mx-2 my-2">Welcome, {{ current_user.username }}!</h2>
+                <div class="mt-3 mx-auto text-right">
+                    <button class="btn btn-outline-primary" id="refreshButton"><i
+                            class="fa fa-refresh"></i>&nbsp;Refresh</button>
+                </div>
                 <div class="modal fade" id="uploadConfirmationModal" tabindex="-1" role="dialog"
                     aria-labelledby="uploadConfirmationModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
@@ -93,6 +97,10 @@
                             </div>
                         </div>
                     </div>
+                    <div class="mt-1 mb-5">
+                        <label for="documentTitle">Document Title (Auto-detected):</label>
+                        <input type="text" class="form-control" id="documentTitle" readonly>
+                    </div>
 
                     <!-- Import News from Source Button -->
                     <div class="mt-3 mb-5">
@@ -133,6 +141,8 @@
         const confirmUploadButton = document.getElementById("confirmUploadButton");
         const uploadConfirmationBody = document.getElementById("uploadConfirmationBody");
 
+        const refreshButton = document.getElementById("refreshButton");
+
         // Function to display a toast message using jQuery
         function showToast(message) {
             const toastHtml = '<div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000" style="position: fixed; top: 10px; left: 40%;">\
@@ -166,6 +176,13 @@
                     const summaryID = button.getAttribute("data-summary-id");
                 });
             });
+        });
+
+
+        refreshButton.addEventListener("click", () => {
+            clearSummaryContainer();
+            clearDocumentContainer();
+            fetchAndDisplayDocuments();
         });
 
 
@@ -222,7 +239,6 @@
                     }
                 })
                 .then(data => {
-                    console.log(data);
                     showToast("Upload successful!")
                     clearDocumentContainer();
                     clearSummaryContainer();
@@ -248,7 +264,6 @@
                     }
                 })
                 .then(data => {
-                    console.log(data);
                     showToast("Document deleted successfully!");
                     const card = document.getElementById(`document-card-${documentId}`);
                     if (card) {
@@ -274,7 +289,6 @@
                     }
                 })
                 .then(data => {
-                    console.log(data);
                     showToast("Document deleted successfully!");
                     const card = document.getElementById(`document-card-${summaryId}`);
                     if (card) {
@@ -615,6 +629,59 @@
                 }
             }
         }
+
+        const uploadLinkButton = document.getElementById("uploadLinkButton");
+        const documentLinkInput = document.getElementById("documentLink");
+        const documentTitleInput = document.getElementById("documentTitle");
+
+        documentLinkInput.addEventListener("input", () => {
+            const link = documentLinkInput.value;
+            const extractedTitle = extractTitleFromLink(link);
+            documentTitleInput.value = extractedTitle;
+        });
+
+        function extractTitleFromLink(link) {
+            const url = new URL(link);
+            const pathnameParts = url.pathname.split('/');
+            const title = pathnameParts[pathnameParts.length - 1];
+            return title;
+        }
+
+        uploadLinkButton.addEventListener("click", () => {
+            const link = documentLinkInput.value;
+            const title = documentTitleInput.value;
+
+
+            if (link.trim() === "") {
+                showToast("Please enter a document link.");
+                return;
+            }
+
+            fetch('/upload-document-link', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ link: link, title: title }),
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error("Link upload failed");
+                    }
+                })
+                .then(data => {
+                    showToast("Upload successful!");
+                    clearDocumentContainer();
+                    clearSummaryContainer();
+                    fetchAndDisplayDocuments();
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        });
+
 
         // Call the function to fetch and display documents when the page loads
         window.onload = fetchAndDisplayDocuments;
