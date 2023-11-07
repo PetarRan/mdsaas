@@ -89,8 +89,6 @@ python run.py
 4. Access the homepage at `http://127.0.0.1:5000/` or `http://localhost:5000/` and use the register to start.
 
 
-## API Documentation
-
 # API Documentation
 
 ## Table of Contents
