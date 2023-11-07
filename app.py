@@ -1,14 +1,11 @@
 import os
-from flask import Flask, request, jsonify, render_template, flash, redirect, url_for, session
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template
 from config.config import Config
-from models import db, Document, User
-from werkzeug.utils import secure_filename
-from PyPDF2 import PdfReader
+from models import db, User
 from blueprints.auth import auth_bp
 from blueprints.documents import document_bp
 from blueprints.summarizer import summarizer_bp
-from flask_login import LoginManager, current_user, login_required
+from flask_login import LoginManager, login_required
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
 
@@ -16,8 +13,6 @@ class LoginForm(FlaskForm):
     username = StringField('Username')
     password = PasswordField('Password')
     submit = SubmitField('Submit')
-
-
 
 ALLOWED_EXTENSIONS = ('txt', 'pdf')
 UPLOAD_FOLDER = 'upload'
