@@ -18,7 +18,7 @@ with open("your_document.txt", "r") as file:
     document_text = file.read()
 
 # NLTK Summarization
-# You can choose different NLTK summarization algorithms (e.g., TextRank, LexRank)
+# NLTK Algs can differ
 # See NLTK documentation for more options.
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
@@ -55,7 +55,7 @@ def nltk_summarize(document_text, num_sentences=3):
 nltk_summary = nltk_summarize(document_text)
 
 # SpaCy Summarization
-# You can customize the summarization method based on your preferences.
+# HERE Customize the summarization method based on your preferences
 def spacy_summarize(document_text, num_sentences=3):
     doc = nlp(document_text)
     sentences = [sent.text for sent in doc.sents]
