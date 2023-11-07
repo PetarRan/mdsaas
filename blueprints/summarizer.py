@@ -65,21 +65,15 @@ def delete_summary(summary_id):
 @summarizer_bp.route('/summarize', methods=['POST'])
 @login_required
 def summarize_documents():
-    data = request.get_json()  # Assuming you send selected document IDs and summarization method in the request JSON
-    document_ids = data.get('document_ids', [])
-    summarization_method = data.get('summarization_method', 'nltk')
+    data = request.get_json()
+    document_content = data.get('documents', [])
+    summarization_method = data.get('summarization_method')
 
-    # Fetch the selected documents from the database
-    selected_documents = Document.query.filter(Document.id.in_(document_ids)).all()
-
-    if not selected_documents:
-        return jsonify({"error": "No documents selected for summarization"}), 400
-
-    # Extract the content of selected documents
-    document_texts = [document.content for document in selected_documents]
+    if not document_content:
+        return jsonify({"error": "No document content provided for summarization"}), 400
 
     # Generate the summary using the selected summarization method
-    summary_text = generate_summary(document_texts, summarization_method)
+    summary_text = generate_summary(document_content, summarization_method)
 
     # Create a new summary in the database
     new_summary = Summary(

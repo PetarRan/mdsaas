@@ -429,9 +429,11 @@
 
             // Collect selected document content and send it to the server for summarization
             const selectedDocumentContent = [];
+            const fetchPromises = [];
+
             for (const card of selectedCards) {
-                const document_Id = card.querySelector('.view-document').dataset.documentId
-                fetch(`/get-document-content/${document_Id}`)
+                const documentId = card.querySelector('.view-document').dataset.documentId;
+                const fetchPromise = fetch(`/get-document-content/${documentId}`)
                     .then((response) => {
                         if (response.ok) {
                             return response.text();
@@ -441,46 +443,61 @@
                     })
                     .then((content) => {
                         selectedDocumentContent.push(content);
-                        // Check if content for all selected documents is collected
-                        if (selectedDocumentContent.length === selectedCards.size) {
-                            // Send the content for summarization to the server
-                            fetch('/summarize', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    documents: selectedDocumentContent,
-                                    summarization_method: selectedMethod,
-                                }),
-                            })
-                                .then(response => response.json())
-                                .then(data => {
-                                    generateSummaryCard(data.generated_summary, selectedMethod, data.summary_id);
-                                })
-                                .catch(error => {
-                                    console.error("Error summarizing documents: " + error);
-                                });
-                        }
                     })
                     .catch((error) => {
                         console.error("Error fetching document content: " + error);
                     });
+
+                fetchPromises.push(fetchPromise);
             }
 
-            // Clear the selected cards set
-            clearSummaryContainer();
-            clearDocumentContainer();
-            fetchAndDisplayDocuments();
-            selectedCards.clear();
-            if (selectedCards.size > 0) {
-                selectSummarizeButton.disabled = false;
-                summarizationMethodSelect.disabled = false;
-            } else {
-                selectSummarizeButton.disabled = true;
-                summarizationMethodSelect.disabled = true;
-            }
+            // Use Promise.all to wait for all fetch requests to complete
+            Promise.all(fetchPromises)
+                .then(() => {
+                    if (selectedDocumentContent.length === selectedCards.size) {
+                        // Send the content for summarization to the server
+                        fetch('/summarize', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                documents: selectedDocumentContent,
+                                summarization_method: selectedMethod,
+                            }),
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                generateSummaryCard(data.generated_summary, selectedMethod, data.summary_id);
+                            })
+                            .then(() => {
+                                showToast("Summarization successful! Method: " + selectedMethod)
+                                // Clear the selected cards set
+                                selectedCards.clear();
+                                if (selectedCards.size > 0) {
+                                    selectSummarizeButton.disabled = false;
+                                    summarizationMethodSelect.disabled = false;
+                                } else {
+                                    selectSummarizeButton.disabled = true;
+                                    summarizationMethodSelect.disabled = true;
+                                }
+                            })
+                            .then(() => {
+                                // Call these functions after the response is received
+                                clearSummaryContainer();
+                                clearDocumentContainer();
+                                fetchAndDisplayDocuments();
+                            })
+                            .catch(error => {
+                                console.error("Error summarizing documents: " + error);
+                            });
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error fetching document content: " + error);
+                });
         });
+
 
         // Function to fetch documents from the API and add document cards
         function fetchAndDisplayDocuments() {
