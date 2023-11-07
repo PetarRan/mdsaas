@@ -32,6 +32,8 @@
                     <button class="btn btn-outline-primary" id="refreshButton"><i
                             class="fa fa-refresh"></i>&nbsp;Refresh</button>
                 </div>
+
+
                 <div class="modal fade" id="uploadConfirmationModal" tabindex="-1" role="dialog"
                     aria-labelledby="uploadConfirmationModalLabel" aria-hidden="true">
                     <div class="modal-dialog" role="document">
@@ -53,6 +55,53 @@
                         </div>
                     </div>
                 </div>
+
+
+                <!-- Choose News Source Modal -->
+                <div class="modal fade" id="chooseNewsSourceModal" tabindex="-1" role="dialog"
+                    aria-labelledby="chooseNewsSourceModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="chooseNewsSourceModalLabel">Choose Your News Source</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="card-container d-flex flex-wrap">
+                                    <!-- News source cards will be added here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Display News Article Modal -->
+                <div class="modal fade" id="displayNewsArticleModal" tabindex="-1" role="dialog"
+                    aria-labelledby="displayNewsArticleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="displayNewsArticleModalLabel">Article Title</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body modal-body-document">
+                                <!-- Display the date and full article text here -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-primary" id="addToDocumentsButton"><i class="fa fa-plus"></i>&nbsp;Add to
+                                    Documents</button>
+                                <button type="button" class="btn btn-success" id="getNewArticleButton"><i class="fa fa-refresh"></i>&nbsp;Get New
+                                    Article</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <ul class="nav nav-tabs" id="myTabs" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link active" id="documents-tab" data-toggle="tab" href="#documents" role="tab"
@@ -683,6 +732,83 @@
                 });
         });
 
+        const chooseNewsSourceModal = new bootstrap.Modal(document.getElementById("chooseNewsSourceModal"));
+        const displayNewsArticleModal = new bootstrap.Modal(document.getElementById("displayNewsArticleModal"));
+
+        document.getElementById("importNewsButton").addEventListener("click", () => {
+            chooseNewsSourceModal.show();
+        });
+
+        function selectNewsSource(source) {
+            const title = "Article Title"; // Replace with the actual title
+            const date = "15. November 2023";   // Replace with the actual date
+            const content = "Full Article Text"; // Replace with the actual content
+
+            // Set the title, date, and content in the "Display News Article" modal
+            document.getElementById("displayNewsArticleModalLabel").textContent = title + " - " + date;
+            document.querySelector("#displayNewsArticleModal .modal-body").innerHTML = `<p>${content}</p>`;
+
+            // Show the "Display News Article" modal
+            displayNewsArticleModal.show();
+        }
+
+        function createNewsSourceCard(title, imgSrc) {
+            const cardContainer = document.createElement("div");
+            cardContainer.className = "col-6 col-md-4 col-lg-3 mb-4";
+
+            const card = document.createElement("a");
+            card.className = "card news-source-card";
+            card.dataset.source = title;
+            card.href = "#";
+            card.style.maxWidth = "250px";
+            card.style.minWidth = "250px";
+
+            const image = document.createElement("img");
+            image.className = "card-img-top";
+            image.src = imgSrc;
+            image.alt = title;
+
+
+            const cardBody = document.createElement("div");
+            cardBody.className = "card-body";
+
+            const cardTitle = document.createElement("h5");
+            cardTitle.className = "card-title";
+            cardTitle.textContent = title;
+
+            cardBody.appendChild(cardTitle);
+            card.appendChild(image);
+            card.appendChild(cardBody);
+            cardContainer.appendChild(card);
+
+            card.style.transition = "box-shadow 0.3s";
+            card.addEventListener("mouseover", () => {
+                card.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.2)";
+            });
+            card.addEventListener("mouseout", () => {
+                card.style.boxShadow = "none";
+            });
+
+            return cardContainer;
+        }
+
+        // Example usage:
+        const newsSources = [
+            { title: "The Wall Street Journal", imgSrc: "https://1000logos.net/wp-content/uploads/2019/11/The-Wall-Street-Journal-emblem.png" },
+            // Add more news sources as needed
+        ];
+
+        const cardContainer = document.querySelector(".card-container");
+        newsSources.forEach(source => {
+            const newsSourceCard = createNewsSourceCard(source.title, source.imgSrc);
+            cardContainer.appendChild(newsSourceCard);
+            document.querySelectorAll(".news-source-card").forEach((card) => {
+                card.addEventListener("click", () => {
+                    selectNewsSource(card.dataset.source);
+                    chooseNewsSourceModal.hide();
+                });
+            });
+        });
 
         // Call the function to fetch and display documents when the page loads
         window.onload = fetchAndDisplayDocuments;
@@ -700,7 +826,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body modal-body-document">
                 <!-- Content will be loaded here -->
             </div>
             <div class="modal-footer">
@@ -709,6 +835,8 @@
         </div>
     </div>
 </div>
+
+
 <style>
     html,
     body {
@@ -717,6 +845,13 @@
         margin: 0px;
         padding: 0px;
         overflow-x: hidden;
+    }
+
+    .modal-body-document {
+        min-height: 60vh;
+        max-height: 80vh;
+        /* Adjust the max height as needed */
+        overflow-y: auto;
     }
 </style>
 
