@@ -6,7 +6,6 @@
 ## Table of Contents
 - [About the App](#about-the-app)
 - [Technologies Used](#technologies-used)
-- [Features](#features)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
 - [API Documentation](#api-documentation)
@@ -47,12 +46,6 @@ Outline the technologies and tools used in your project. Include programming lan
 - JavaScript
 - Docker
 - HTML/CSS
-
-## Features
-
-- **Homepage**: The application includes a simple homepage that introduces users to the text summarization service. It displays a welcome message and provides a link to access the summarization API.
-
-- **Summarization API**: The API accepts a list of documents and generates a summary of the combined text. Users can submit documents via a POST request to the `/summarize` endpoint.
 
 ## Project Structure
 
