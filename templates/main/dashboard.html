@@ -68,7 +68,7 @@
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
-                            <div class="modal-body">
+                            <div class="modal-body modal-body-document">
                                 <div class="card-container d-flex flex-wrap">
                                     <!-- News source cards will be added here -->
                                 </div>
@@ -95,8 +95,6 @@
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-outline-primary" id="addToDocumentsButton"><i class="fa fa-plus"></i>&nbsp;Add to
                                     Documents</button>
-                                <button type="button" class="btn btn-success" id="getNewArticleButton"><i class="fa fa-refresh"></i>&nbsp;Get New
-                                    Article</button>
                             </div>
                         </div>
                     </div>
@@ -794,7 +792,17 @@
 
         // Example usage:
         const newsSources = [
-            { title: "The Wall Street Journal", imgSrc: "https://1000logos.net/wp-content/uploads/2019/11/The-Wall-Street-Journal-emblem.png" },
+            { title: "The Wall Street Journal", imgSrc: "{{ url_for('static', filename='wsj.png') }}", value: "wsj.com" },
+            { title: "The BBC", imgSrc: "{{ url_for('static', filename='bbc.png') }}", value: "bbc.com" },
+            { title: "Europa Press", imgSrc: "{{ url_for('static', filename='europapress.png') }}", value: "europapress.es" },
+            { title: "The Daily Mail UK", imgSrc: "{{ url_for('static', filename='dailymail.png') }}", value: "dailymail.co.uk" },
+            { title: "USA Today", imgSrc: "{{ url_for('static', filename='usatoday.png') }}", value: "usatoday.com" },
+            { title: "The European Comission", imgSrc: "{{ url_for('static', filename='eceuropa.png') }}", value: "ec.europa.eu" },
+            { title: "Al Jazeera", imgSrc: "{{ url_for('static', filename='aljazeera.png') }}", value: "aljazeera.com" },
+            { title: "BBC News 24", imgSrc: "{{ url_for('static', filename='bbc24.png') }}", value: "bbc24news.com" },
+            { title: "The Daily Wire", imgSrc: "{{ url_for('static', filename='dailywire.png') }}", value: "dailywire.com" },
+            { title: "Paradigm", imgSrc: "{{ url_for('static', filename='paradigm.png') }}", value: "wallstreetdaily.com" },
+            { title: "Yahoo News", imgSrc: "{{ url_for('static', filename='yahoo.png') }}", value: "tw.news.yahoo.com" },
             // Add more news sources as needed
         ];
 

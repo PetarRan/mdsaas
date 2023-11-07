@@ -8,15 +8,13 @@ Flask-CORS
 Flask-WTF
 Flask_Sqlalchemy
 PyPDF2
+eventregistry
 
 # NLP Libraries
 spaCy
 Gensim
 nltk
 sumy
-
-# React Frontend Dependencies (optional, if using React for the frontend)
-# Add any specific React dependencies you require here
 
 # Development and Testing
 pytest

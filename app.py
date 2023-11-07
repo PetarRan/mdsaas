@@ -5,6 +5,7 @@ from models import db, User
 from blueprints.auth import auth_bp
 from blueprints.documents import document_bp
 from blueprints.summarizer import summarizer_bp
+from blueprints.news import news_bp
 from flask_login import LoginManager, login_required
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
@@ -23,6 +24,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.register_blueprint(auth_bp)
 app.register_blueprint(document_bp)
 app.register_blueprint(summarizer_bp)
+app.register_blueprint(news_bp)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
