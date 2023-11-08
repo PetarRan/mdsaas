@@ -38,6 +38,7 @@ Outline the technologies and tools used in your project. Include programming lan
 - PostgreSQL
 - JavaScript
 - Docker
+- [News API](https://newsapi.ai/)
 - HTML/CSS
 
 ## Project Structure
