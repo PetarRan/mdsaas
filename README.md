@@ -6,7 +6,6 @@
 ## Table of Contents
 - [About the App](#about-the-app)
 - [Technologies Used](#technologies-used)
-- [Features](#features)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
 - [API Documentation](#api-documentation)
@@ -25,18 +24,11 @@ Multi-document Summarizer as a Service is a cloud-based platform that empowers u
 
 - **Source Selection:** Choose from a variety of reputable news sources, including The Wall Street Journal, BBC, Europa Press, and more.
 
-- **Random Article Retrieval:** Get a random article from your selected source each time you use the app.
-
 - **Article Summaries:** View concise summaries of news articles, making it easy to stay informed quickly.
 
 - **Save to Documents:** Easily save interesting articles as documents for future reference.
 
 - **Responsive Design:** Access the app seamlessly on various devices, from desktops to smartphones.
-
-"News Aggregator" stands out by providing users with a tailored news experience. Whether you want to catch up on global news, follow industry updates, or stay informed about specific topics, our app has you covered. Say goodbye to information overload and hello to a more streamlined news-reading experience.
-
-We're committed to continually improving and expanding our app's capabilities to enhance your news consumption. Thank you for choosing "News Aggregator."
-
 
 ## Technologies Used
 Outline the technologies and tools used in your project. Include programming languages, frameworks, libraries, databases, and any other important tech stack components.
@@ -46,13 +38,8 @@ Outline the technologies and tools used in your project. Include programming lan
 - PostgreSQL
 - JavaScript
 - Docker
+- [News API](https://newsapi.ai/)
 - HTML/CSS
-
-## Features
-
-- **Homepage**: The application includes a simple homepage that introduces users to the text summarization service. It displays a welcome message and provides a link to access the summarization API.
-
-- **Summarization API**: The API accepts a list of documents and generates a summary of the combined text. Users can submit documents via a POST request to the `/summarize` endpoint.
 
 ## Project Structure
 
@@ -95,8 +82,6 @@ python run.py
 
 4. Access the homepage at `http://127.0.0.1:5000/` or `http://localhost:5000/` and use the register to start.
 
-
-## API Documentation
 
 # API Documentation
 
