@@ -24,18 +24,11 @@ Multi-document Summarizer as a Service is a cloud-based platform that empowers u
 
 - **Source Selection:** Choose from a variety of reputable news sources, including The Wall Street Journal, BBC, Europa Press, and more.
 
-- **Random Article Retrieval:** Get a random article from your selected source each time you use the app.
-
 - **Article Summaries:** View concise summaries of news articles, making it easy to stay informed quickly.
 
 - **Save to Documents:** Easily save interesting articles as documents for future reference.
 
 - **Responsive Design:** Access the app seamlessly on various devices, from desktops to smartphones.
-
-"News Aggregator" stands out by providing users with a tailored news experience. Whether you want to catch up on global news, follow industry updates, or stay informed about specific topics, our app has you covered. Say goodbye to information overload and hello to a more streamlined news-reading experience.
-
-We're committed to continually improving and expanding our app's capabilities to enhance your news consumption. Thank you for choosing "News Aggregator."
-
 
 ## Technologies Used
 Outline the technologies and tools used in your project. Include programming languages, frameworks, libraries, databases, and any other important tech stack components.
